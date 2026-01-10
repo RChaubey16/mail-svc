@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TemplatesService } from './templates.service';
 
 @Module({
-  providers: [TemplatesService]
+  providers: [TemplatesService],
+  exports: [TemplatesService],
 })
 export class TemplatesModule {}
