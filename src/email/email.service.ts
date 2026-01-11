@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { TemplatesService } from '../templates/templates.service';
-import { SendEmailDto } from './email.dto';
+import { SendEmailDto } from './dto/email.dto';
 
 @Injectable()
 export class EmailService {

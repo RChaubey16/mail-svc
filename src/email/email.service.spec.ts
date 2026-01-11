@@ -3,7 +3,7 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { BadRequestException } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { TemplatesService } from '../templates/templates.service';
-import { SendEmailDto } from './email.dto';
+import { SendEmailDto } from './dto/email.dto';
 
 describe('EmailService', () => {
   let service: EmailService;
