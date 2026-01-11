@@ -5,9 +5,14 @@ import { EmailModule } from './email/email.module';
 import { TemplatesModule } from './templates/templates.module';
 import { HealthController } from './health/health.controller';
 import { BullModule } from '@nestjs/bullmq';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     BullModule.forRoot({
       connection: {
         host: 'localhost',
