@@ -2,13 +2,53 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface TemplateSchema {
+export interface TemplateSchema {
   required?: string[];
 }
 
 @Injectable()
 export class TemplatesService {
   private readonly templatesRoot = path.join(process.cwd(), 'email-templates');
+
+  /**
+   * Lists all available templates and their versions.
+   * @returns A list of templates with their versions and schema info.
+   */
+  listTemplates() {
+    if (!fs.existsSync(this.templatesRoot)) {
+      return [];
+    }
+
+    const templates = fs.readdirSync(this.templatesRoot);
+
+    return templates
+      .filter((template) =>
+        fs.statSync(path.join(this.templatesRoot, template)).isDirectory(),
+      )
+      .map((template) => {
+        const templatePath = path.join(this.templatesRoot, template);
+        const versions = fs
+          .readdirSync(templatePath)
+          .filter((v) => fs.statSync(path.join(templatePath, v)).isDirectory());
+
+        return {
+          name: template,
+          versions: versions.map((v) => {
+            const schemaPath = path.join(templatePath, v, 'schema.json');
+            let schema: TemplateSchema = {};
+            if (fs.existsSync(schemaPath)) {
+              schema = JSON.parse(
+                fs.readFileSync(schemaPath, 'utf-8'),
+              ) as TemplateSchema;
+            }
+            return {
+              version: v,
+              schema,
+            };
+          }),
+        };
+      });
+  }
 
   /**
    * Validates the template and its variables.
