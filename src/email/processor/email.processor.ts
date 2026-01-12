@@ -11,6 +11,7 @@ interface emailDataSchema {
   template: string;
   version: string;
   to: string;
+  subject: string;
   variables: Record<string, unknown>;
 }
 
@@ -36,7 +37,7 @@ export class EmailProcessor extends WorkerHost {
   }
 
   async process(job: Job) {
-    const { template, to, version, variables }: emailDataSchema =
+    const { template, to, version, variables, subject }: emailDataSchema =
       job.data as emailDataSchema;
 
     console.log(`Processing email ${template} for`, to);
@@ -48,7 +49,7 @@ export class EmailProcessor extends WorkerHost {
     });
 
     // 3. Send email
-    await this.sendMail({ to, subject: 'Welcome aboard!', html });
+    await this.sendMail({ to, subject, html });
   }
 
   async sendMail(options: {

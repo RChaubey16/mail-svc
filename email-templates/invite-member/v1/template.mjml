@@ -1,0 +1,37 @@
+<mjml>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-text font-size="24px" font-weight="bold" color="#333333">
+          Workspace Invitation
+        </mj-text>
+
+        <mj-text font-size="16px" color="#555555" line-height="1.5">
+          {{#if inviterName}}
+            <strong>{{inviterName}}</strong> has invited you to join the <strong>{{workspaceName}}</strong> workspace.
+          {{else}}
+            You have been invited to join the <strong>{{workspaceName}}</strong>.
+          {{/if}}
+        </mj-text>
+
+        <mj-text font-size="16px" color="#555555">
+          Click the button below to accept the invitation and get started.
+        </mj-text>
+
+        <mj-spacer height="20px" />
+
+        <mj-button background-color="#4F46E5" color="white" font-size="16px" font-weight="bold" href="{{inviteUrl}}" target="_blank" border-radius="6px">
+          Accept Invitation
+        </mj-button>
+
+        <mj-spacer height="20px" />
+
+        <mj-divider border-color="#eeeeee" />
+
+        <mj-text font-size="12px" color="#999999" align="center">
+          © {{year}} Your Company. All rights reserved.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
