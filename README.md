@@ -1,4 +1,4 @@
-# Mail Service (mail-svc)
+# Notifications service
 
 A robust, asynchronous email notification service built with **NestJS**, **BullMQ**, and **MJML**. This service provides a centralized way to manage and send system emails using templates with version control and schema validation.
 
@@ -54,7 +54,7 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=your-user
 SMTP_PASS=your-password
-SMTP_FROM="Mail Service <noreply@example.com>"
+SMTP_FROM="Notifications service <noreply@example.com>"
 
 # Redis Configuration (BullMQ)
 REDIS_HOST=localhost

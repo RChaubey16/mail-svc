@@ -5,7 +5,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EmailModule } from './email/email.module';
 import { TemplatesModule } from './templates/templates.module';
-import { HealthController } from './health/health.controller';
 import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
@@ -27,7 +26,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     TemplatesModule,
     NotificationsModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
