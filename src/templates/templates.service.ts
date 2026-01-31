@@ -1,6 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import Handlebars from 'handlebars';
+import mjml2html from 'mjml';
 
 export interface TemplateSchema {
   required?: string[];
@@ -91,5 +93,47 @@ export class TemplatesService {
     }
 
     return true;
+  }
+
+  /**
+   * Renders the template with the provided variables.
+   * @param templateName The name of the template.
+   * @param version The version of the template.
+   * @param variables The variables to render.
+   * @returns The rendered HTML string.
+   */
+  render(
+    templateName: string,
+    version: string,
+    variables: Record<string, any>,
+  ): string {
+    const templatePath = path.join(this.templatesRoot, templateName, version);
+    const templateFile = path.join(templatePath, 'template.mjml');
+
+    if (!fs.existsSync(templateFile)) {
+      throw new BadRequestException(
+        `Template file missing for "${templateName}" (${version})`,
+      );
+    }
+
+    const mjmlTemplate = fs.readFileSync(templateFile, 'utf8');
+
+    // 1. Render with Handlebars
+    const compiled = Handlebars.compile(mjmlTemplate);
+    const mjmlWithData = compiled(variables);
+
+    // 2. Convert MJML → HTML
+    const { html, errors } = mjml2html(mjmlWithData, {
+      validationLevel: 'strict',
+    });
+
+    if (errors?.length) {
+      throw new BadRequestException({
+        error: 'MJML_RENDER_ERROR',
+        details: errors,
+      });
+    }
+
+    return html;
   }
 }

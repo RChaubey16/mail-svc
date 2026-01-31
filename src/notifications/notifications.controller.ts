@@ -1,7 +1,15 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { SendEmailDto } from 'src/email/dto/email.dto';
-import { EmailService } from 'src/email/email.service';
-import { TemplatesService } from 'src/templates/templates.service';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { SendEmailDto } from '../email/dto/email.dto';
+import { EmailService } from '../email/email.service';
+import { TemplatesService } from '../templates/templates.service';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -172,15 +180,40 @@ export class NotificationsController {
             gap: 0.5rem;
           }
 
-          .variable-chip {
-            padding: 0.4rem 0.8rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            color: var(--text-main);
-            font-family: 'JetBrains Mono', monospace;
-          }
+            .variable-chip {
+              padding: 0.4rem 0.8rem;
+              background: rgba(255, 255, 255, 0.03);
+              border: 1px solid var(--card-border);
+              border-radius: 8px;
+              font-size: 0.85rem;
+              color: var(--text-main);
+              font-family: 'JetBrains Mono', monospace;
+            }
+
+            .preview-btn {
+              display: inline-flex;
+              align-items: center;
+              padding: 0.6rem 1.2rem;
+              background: var(--primary);
+              color: white;
+              border-radius: 12px;
+              font-size: 0.9rem;
+              font-weight: 600;
+              text-decoration: none;
+              margin-top: 1.5rem;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px var(--primary-glow);
+            }
+
+            .preview-btn:hover {
+              transform: scale(1.05);
+              box-shadow: 0 6px 20px var(--primary-glow);
+              background: #4f46e5;
+            }
+
+            .preview-btn svg {
+              margin-right: 0.5rem;
+            }
 
           .empty-state {
             text-align: center;
@@ -212,8 +245,6 @@ export class NotificationsController {
                     (v) => `
                   <div class="version-item">
                     <span class="version-tag">${v.version}</span>
-                    <div class="variables-section">
-                      <div class="variables-title">Required Variables</div>
                       <div class="variable-list">
                         ${(() => {
                           const required = v.schema.required || [];
@@ -229,6 +260,10 @@ export class NotificationsController {
                         })()}
                       </div>
                     </div>
+                    <a href="/notifications/templates/${t.name}/${v.version}/preview" target="_blank" class="preview-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Preview
+                    </a>
                   </div>
                 `,
                   )
@@ -252,8 +287,28 @@ export class NotificationsController {
     return html;
   }
 
+  @Get('templates/:template/:version/preview')
+  preview(
+    @Param('template') template: string,
+    @Param('version') version: string,
+    @Query() variables: Record<string, string>,
+  ) {
+    return this.templatesService.render(template, version, variables);
+  }
+
   @Post('email')
   send(@Body() dto: SendEmailDto) {
     return this.emailService.enqueue(dto);
+  }
+
+  @Get(':id')
+  async getStatus(@Param('id') id: string) {
+    const jobStatus = await this.emailService.getJobStatus(id);
+
+    if (!jobStatus) {
+      throw new NotFoundException(`Notification job with ID ${id} not found`);
+    }
+
+    return jobStatus;
   }
 }

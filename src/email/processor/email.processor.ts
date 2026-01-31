@@ -1,11 +1,8 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
-import Handlebars from 'handlebars';
-import mjml2html from 'mjml';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as nodemailer from 'nodemailer';
+import { TemplatesService } from '../../templates/templates.service';
 
 interface emailDataSchema {
   template: string;
@@ -18,9 +15,11 @@ interface emailDataSchema {
 @Processor('email')
 export class EmailProcessor extends WorkerHost {
   private transporter: nodemailer.Transporter;
-  private readonly templatesRoot = path.join(process.cwd(), 'email-templates');
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly templatesService: TemplatesService,
+  ) {
     super();
   }
 
@@ -43,7 +42,7 @@ export class EmailProcessor extends WorkerHost {
     console.log(`Processing email ${template} for`, to);
 
     // 1. Load MJML
-    const html = this.renderTemplate(template, version ?? 'v1', {
+    const html = this.templatesService.render(template, version ?? 'v1', {
       ...variables,
       year: new Date().getFullYear(),
     });
@@ -63,36 +62,5 @@ export class EmailProcessor extends WorkerHost {
       subject: options.subject,
       html: options.html,
     });
-  }
-
-  private renderTemplate(
-    templateName: string,
-    version: string,
-    data: Record<string, any>,
-  ): string {
-    // 1. Load MJML file
-    const templatePath = path.join(this.templatesRoot, templateName, version);
-    const templateFile = path.join(templatePath, `template.mjml`);
-
-    if (!fs.existsSync(templateFile)) {
-      throw new Error(`Email template not found: ${templatePath}`);
-    }
-
-    const mjmlTemplate = fs.readFileSync(templateFile, 'utf8');
-
-    // 2. Render with Handlebars
-    const compiled = Handlebars.compile(mjmlTemplate);
-    const mjmlWithData = compiled(data);
-
-    // 3. Convert MJML → HTML
-    const { html, errors } = mjml2html(mjmlWithData, {
-      validationLevel: 'strict',
-    });
-
-    if (errors?.length) {
-      throw new Error(`MJML render error: ${JSON.stringify(errors)}`);
-    }
-
-    return html;
   }
 }

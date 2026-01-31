@@ -27,4 +27,44 @@ export class EmailService {
       status: 'queued',
     };
   }
+
+  /**
+   * Retrieves the status and data of a specific email job.
+   * @param id The job ID.
+   * @returns The job status and email data.
+   */
+  async getJobStatus(id: string) {
+    const job = await this.emailQueue.getJob(id);
+
+    if (!job) {
+      return null;
+    }
+
+    const state = await job.getState();
+    let status: 'queued' | 'processing' | 'completed' | 'failed' = 'queued';
+
+    switch (state) {
+      case 'completed':
+        status = 'completed';
+        break;
+      case 'failed':
+        status = 'failed';
+        break;
+      case 'active':
+        status = 'processing';
+        break;
+      case 'waiting':
+      case 'delayed':
+      case 'waiting-children':
+      case 'prioritized':
+        status = 'queued';
+        break;
+    }
+
+    return {
+      id: job.id,
+      status,
+      emailData: job.data as SendEmailDto,
+    };
+  }
 }
